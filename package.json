@@ -1,0 +1,17 @@
+{
+  "name": "wpo",
+  "version": "1.0.0",
+  "description": "backend tester and analytics by chrome remote debug protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "httpster -p 8080"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "devtools-timeline-model": "^1.0",
+    "chrome-remote-interface": "^0.11.0",
+    "httpster": "^1.0.3"
+  }
+}
