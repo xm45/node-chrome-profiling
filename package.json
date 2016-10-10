@@ -10,8 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "devtools-timeline-model": "^1.0",
     "chrome-remote-interface": "^0.11.0",
-    "httpster": "^1.0.3"
+    "devtools-timeline-model": "^1.0",
+    "httpster": "^1.0.3",
+    "underscore": "^1.8.3"
   }
 }
