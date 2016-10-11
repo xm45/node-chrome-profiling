@@ -1,5 +1,5 @@
 struct :
-    /module
+    /modules
         parser trace file
         get target data
     /core

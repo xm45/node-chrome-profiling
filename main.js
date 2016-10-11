@@ -1,4 +1,7 @@
 const fs = require('fs');
+const events = require("events");
+const emitter = new events.EventEmitter();
+
 const runner = require("./run_chrome");
 const tester = require("./tester");
 const dirs = [runner.tmpdir,tester.tracedir];
@@ -13,12 +16,22 @@ var checkDir = (args)=>{
 }
 checkDir(dirs);
 
-process.on('exit',()=>{
-	console.log();
-	runner.close();
-	tester.close();
-	process.exit();
+runner(emitter);
+tester(emitter);
+
+var start = () => {
+	return tester.run("http://www.baidu.com");
+}
+
+emitter.on('running',(rawEvents) => {
+	var rawEvents = start();
 });
+emitter.on('exit',()=>{
+	runner.close();
+})
 
 runner.run();
-//setTimeout(()=>tester("www.baidu.com"),3000);
+// process.nextTick(
+// 	()=>tester.run("http://baidu.com")
+// );
+

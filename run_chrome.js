@@ -9,6 +9,10 @@ const args = ["--remote-debugging-port=9222","--user-data-dir="+tmpdir+"/chrome-
 
 var chrome = null;
 
+module.exports = emitter => {
+    module.emitter = emitter;
+}
+
 var run = ()=>{
 	chrome = spawn(command,args);
 	chrome.on('exit', function (code) {
@@ -17,6 +21,8 @@ var run = ()=>{
 	chrome.on('connection', function (code) {
 	    console.log('test:' + code);
 	});
+	setTimeout(()=>
+		module.emitter.emit('running'),2000);
 }
 
 var close = ()=>{
@@ -25,6 +31,6 @@ var close = ()=>{
 		chrome.kill();
 }
 
-exports.run = run;
-exports.close = close;
-exports.tmpdir = tmpdir;
+module.exports.run = run;
+module.exports.close = close;
+module.exports.tmpdir = tmpdir;
