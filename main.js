@@ -5,6 +5,7 @@ const emitter = new events.EventEmitter();
 const runner = require("./run_chrome");
 const tester = require("./tester");
 const dirs = [runner.tmpdir,tester.tracedir];
+const filename = tester.tracedir+"/report.txt";
 
 //check file
 var checkDir = (args)=>{
@@ -20,7 +21,7 @@ runner(emitter);
 tester(emitter);
 
 var start = () => {
-	return tester.run("http://www.baidu.com");
+	return tester.trace("http://www.baidu.com");
 }
 
 emitter.on('running',(rawEvents) => {
@@ -28,6 +29,9 @@ emitter.on('running',(rawEvents) => {
 });
 emitter.on('exit',()=>{
 	runner.close();
+})
+emitter.on('finish_test',()=>{
+	emitter.emit('exit');
 })
 
 runner.run();

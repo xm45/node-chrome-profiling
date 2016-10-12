@@ -87,7 +87,6 @@ TimelineParser.prototype.parse = function(record, type){
 	var parser;
 	switch( record.type ){
 		case "Program":
-
 			_.forEach( record.children, function(childRecord, childIndex){
 				parser = self.getParser( childRecord, type );
 				if( parser ){
@@ -97,7 +96,7 @@ TimelineParser.prototype.parse = function(record, type){
 			break;
 		default :
 			parser = self.getParser( record, type );
-			console.log(parser);
+			//console.log(parser);
 			if( parser ){
 				parser.call( self, record, type );
 			}
@@ -123,6 +122,7 @@ TimelineParser.prototype.allSupportedType = function(){
 
 TimelineParser.prototype.getParser = function(record, type){
 	if( type == 'all' ){
+		//console.log(this.parsers);
 		for( var parserType in this.parsers ){
 			var parserConfig = this.parsers[parserType];
 			if( parserConfig.recordType[record.type] ){

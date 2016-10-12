@@ -1,0 +1,20 @@
+test.txt 
+
+Timeline model events:
+ 624
+IR model interactions
+ 0
+Frame model frames:
+ 0
+Filmstrip model screenshots:
+ 0
+Top down tree total time:
+ 163.65500002726912
+Bottom up tree leaves:
+ 40
+Bottom up tree, grouped, 2nd top URL:
+ 28.86 http://s1.bdstatic.com/r/www/cache/static/baiduia/baiduia_b45d552b.js
+Bottom up tree, grouped, 3rd top subdomain:
+ 9.36 
+Bottom up tree grouped by EventName:
+ [object Map]

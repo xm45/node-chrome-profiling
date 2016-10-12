@@ -2,7 +2,6 @@ const fs = require('fs');
 const Chrome = require('chrome-remote-interface');
 const util = require('util');
 const tracedir = "trace_file/"+Date.now()+"/"
-const filename = tracedir+'trace-raw.devtools.trace';
 const trace_categories = ['-*', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack'];
 
 var rawEvents = [];
@@ -11,7 +10,8 @@ module.exports = emitter => {
     module.emitter = emitter;
 }
 
-var run = (url) => {
+var trace = (url) => {
+    var filename = tracedir+'trace-raw.devtools.trace';
     Chrome(function (chrome) {
         with (chrome) {
             Page.enable();
@@ -40,12 +40,51 @@ var run = (url) => {
                 //console.log('Found events written to file: ' + file);
 
                 chrome.close();
-                module.emitter.emit('exit');
+                module.emitter.emit('finish_test');
             });
         }
     }).on('error', e => console.error('Cannot connect to Chrome', e))
     return rawEvents;
 }
+var cpu = (url) => {
+
+    Chrome(function (chrome) {
+        with (chrome) {
+            Page.enable();
+            Page.loadEventFired(function () {
+                // on load we'll start profiling, kick off the test, and finish
+                // alternatively, Profiler.start(), Profiler.stop() are accessible via chrome-remote-interface
+                Runtime.evaluate({ "expression": "console.profile(); startTest(); console.profileEnd();" });
+            });
+
+            Profiler.enable();
+
+            // 100 microsecond JS profiler sampling resolution, (1000 is default)
+            Profiler.setSamplingInterval({ 'interval': 100 }, function () {
+                Page.navigate({'url': url});
+            });
+
+            Profiler.consoleProfileFinished(function (params) {
+                // CPUProfile object (params.profile) described here:
+                //    https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/devtools/protocol.json&q=protocol.json%20%22CPUProfile%22,&sq=package:chromium
+
+                // Either:
+                // 1. process the data however you wish… or,
+                // 2. Use the JSON file, open Chrome DevTools, Profiles tab,
+                //    select CPU Profile radio button, click `load` and view the
+                //    profile data in the full devtools UI.
+                var filename = tracedir+'profile.cpuprofile';
+                var data = JSON.stringify(params.profile, null, 2);
+                fs.writeFileSync(file, data);
+                console.log('Done! See ' + file);
+                chrome.close();
+            });
+        }
+    }).on('error', function () {
+        console.error('Cannot connect to Chrome');
+    });
+}
 
 module.exports.tracedir = tracedir;
-module.exports.run = run;
+module.exports.trace = trace;
+module.exports.cpu = cpu;
