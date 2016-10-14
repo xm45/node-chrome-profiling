@@ -71,8 +71,12 @@ var writeHighLevel = (filename) => {
 	bottomUpByName.children.forEach(function(value, key) {
 		result.set(key, value.selfTime);
 	});
-	data.append('Bottom up tree grouped by EventName:\n', result);
-	console.log(Map.toString());
+	data.append('Bottom up tree grouped by EventName:\n');
+	data.append('Map {');
+	for(var item of result)
+		console.log('\t',item[0].toString(),item[1]);
+	data.append('Map }');
+	//console.log(result);
 
 	fs.writeFileSync(filename, data.str);
 }

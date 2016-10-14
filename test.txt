@@ -17,4 +17,6 @@ Bottom up tree, grouped, 2nd top URL:
 Bottom up tree, grouped, 3rd top subdomain:
  9.36 
 Bottom up tree grouped by EventName:
- [object Map]
+
+Map {
+Map }
