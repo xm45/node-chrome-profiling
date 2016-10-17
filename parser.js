@@ -1,5 +1,6 @@
 // var _ = require('undersorce');
 var fs = require('fs');
+var _ = require('undersorce');
 var TraceToTimelineModel = require('devtools-timeline-model');
 const StringBuffer = require("./lib").StringBuffer;
 
@@ -70,7 +71,24 @@ var highlevel = (domain) => {
 	//console.log(result);
 	return data;
 }
+var parse = () => {
+	/*
+	target aim
+		first paint
+		domContentLoaded
+		loadTime
 
+		forcedRecalcs count
+		forcedLayouts count
+
+		net request count/size
+		html count/size
+		js count/size
+		css count/size
+
+	 */
+	_.foreach();
+}
 module.exports.set = set;
 module.exports.getReflow = getReflow;
 module.exports.highlevel = highlevel;

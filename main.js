@@ -42,7 +42,8 @@ var parse = () => {
 	result.rawEvents = tester.rawEvents;
 	parser.set(result.rawEvents);
 	result.reflow = parser.getReflow();
-	result.highlevel = parser.highlevel(url);
+	result.highlevel = function(){};
+	parser.highlevel(url);
 	result.highlevel.append('\n');
 	result.highlevel.append('(', result.reflow.length, ') forced style recalc and forced layouts found.');
 	//this node extension may have Thread safety problem, so the time data(sum of events' time) may be wrong
