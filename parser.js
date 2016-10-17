@@ -1,6 +1,7 @@
 // var _ = require('undersorce');
 var fs = require('fs');
 var TraceToTimelineModel = require('devtools-timeline-model');
+const StringBuffer = require("./lib").StringBuffer;
 
 module.exports = dir => {
 	module.dir = dir;
@@ -11,7 +12,7 @@ var set = rawEvents => {
 }
 
 var getReflow = () => {
-	var forcedReflowEvents = rawEvents
+	var forcedReflowEvents = module.rawEvents
         .filter( e => e.name == 'UpdateLayoutTree' || e.name == 'Layout')
         .filter( e => e.args && e.args.beginData && e.args.beginData.stackTrace && e.args.beginData.stackTrace.length)
     return forcedReflowEvents;
@@ -29,26 +30,14 @@ function dumpScreenshot(filmStripModel, arr) {
   }
 }
 
-function StringBuffer(str) {
-	if(!arguments[0]) str = "";
-	this.str = str;
-}
-StringBuffer.prototype.append = function(first){
-	var len = arguments.length;
-	if(!arguments[0]) first = "";
-	this.str += first;
-	for(var i = 1; i < len; i ++)
-		this.str += ' ' + arguments[i].toString();
-	this.str += '\n';
-}
-
-var writeHighLevel = (filename) => {
+//using devtools-timeline-model
+var highlevel = (domain) => {
 	//from devtool-timeline-model
 	var data = new StringBuffer('');
 
 	var model = new TraceToTimelineModel(module.rawEvents);
 
-	data.append(filename,'\n');
+	data.append(domain,'\n');
 
 	data.append('Timeline model events:\n', model.timelineModel().mainThreadEvents().length);
 	data.append('IR model interactions\n', model.interactionModel().interactionRecords().length);
@@ -71,19 +60,21 @@ var writeHighLevel = (filename) => {
 	bottomUpByName.children.forEach(function(value, key) {
 		result.set(key, value.selfTime);
 	});
-	data.append('Bottom up tree grouped by EventName:\n');
-	data.append('Map {');
-	for(var item of result)
-		console.log('\t',item[0].toString(),item[1]);
-	data.append('Map }');
+	data.append('Bottom up tree grouped by EventName:');
+	// data.append('Map {');
+	for(var item of result) {
+		// console.log('\t',item[0],item[1]);
+		data.append('\t',item[0],"=>",item[1]);
+	}
+	// data.append('}');
 	//console.log(result);
-
-	fs.writeFileSync(filename, data.str);
+	return data;
 }
 
 module.exports.set = set;
 module.exports.getReflow = getReflow;
+module.exports.highlevel = highlevel;
 
-var rawData = require("./test.json");
-module.exports.set(rawData);
-writeHighLevel("test.txt");
+// var rawData = require("./test-large.json");
+// module.exports.set(rawData);
+// writeHighLevel("test-large.txt");

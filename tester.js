@@ -1,8 +1,7 @@
-const fs = require('fs');
+const StringBuffer = require("./lib").StringBuffer;
 const Chrome = require('chrome-remote-interface');
 const util = require('util');
-const tracedir = "trace_file/"+Date.now()+"/"
-const trace_categories = ['-*', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack'];
+const trace_categories = ["-*", "devtools.timeline", "disabled-by-default-devtools.timeline", "disabled-by-default-devtools.timeline.frame", "toplevel", "blink.console", "disabled-by-default-devtools.timeline.stack", "disabled-by-default-devtools.screenshot", "disabled-by-default-v8.cpu_profile"];
 
 var rawEvents = [];
 
@@ -11,7 +10,6 @@ module.exports = emitter => {
 }
 
 var trace = (url) => {
-    var filename = tracedir+'trace-raw.devtools.trace';
     Chrome(function (chrome) {
         with (chrome) {
             Page.enable();
@@ -24,36 +22,21 @@ var trace = (url) => {
             Tracing.dataCollected( data => { rawEvents = rawEvents.concat(data.value); });
 
             Tracing.tracingComplete(function () {
-                // find forced layouts
-                // https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/devtools/front_end/timeline/TimelineModel.js&sq=package:chromium&type=cs&q=f:timelinemodel%20forced
-                // var forcedReflowEvents = rawEvents
-                //     .filter( e => e.name == 'UpdateLayoutTree' || e.name == 'Layout')
-                //     .filter( e => e.args && e.args.beginData && e.args.beginData.stackTrace && e.args.beginData.stackTrace.length)
-
-                // console.log('Found events:', util.inspect(forcedReflowEvents, { showHidden: false, depth: null }), '\n');
-
-                // console.log('Results: (', forcedReflowEvents.length, ') forced style recalc and forced layouts found.\n')
-
-                fs.writeFileSync(filename, JSON.stringify(rawEvents , null, 2));
-                console.log('Trace file: ' + filename);
-                console.log('You can open the trace file in DevTools Timeline panel. (Turn on experiment: Timeline tracing based JS profiler)\n');
-                //console.log('Found events written to file: ' + file);
-
+                module.exports.rawEvents = rawEvents;
                 chrome.close();
                 module.emitter.emit('finish_test');
             });
         }
     }).on('error', e => console.error('Cannot connect to Chrome', e))
-    return rawEvents;
 }
-var cpu = (url) => {
 
+//bug, can't using in otherwise domain except
+var cpu = (url) => {
     Chrome(function (chrome) {
+        console.log("cpu profile");
         with (chrome) {
             Page.enable();
             Page.loadEventFired(function () {
-                // on load we'll start profiling, kick off the test, and finish
-                // alternatively, Profiler.start(), Profiler.stop() are accessible via chrome-remote-interface
                 Runtime.evaluate({ "expression": "console.profile(); startTest(); console.profileEnd();" });
             });
 
@@ -65,19 +48,13 @@ var cpu = (url) => {
             });
 
             Profiler.consoleProfileFinished(function (params) {
-                // CPUProfile object (params.profile) described here:
-                //    https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/devtools/protocol.json&q=protocol.json%20%22CPUProfile%22,&sq=package:chromium
-
-                // Either:
-                // 1. process the data however you wish… or,
-                // 2. Use the JSON file, open Chrome DevTools, Profiles tab,
-                //    select CPU Profile radio button, click `load` and view the
-                //    profile data in the full devtools UI.
-                var filename = tracedir+'profile.cpuprofile';
                 var data = JSON.stringify(params.profile, null, 2);
-                fs.writeFileSync(file, data);
-                console.log('Done! See ' + file);
+                module.exports.cpuProfile = data;
+                // var filename = tracedir+'profile.cpuprofile';
+                // fs.writeFileSync(file, data);
+                // console.log('CPUprofile file: ' + filename);
                 chrome.close();
+                module.emitter.emit('finish_test');
             });
         }
     }).on('error', function () {
@@ -85,6 +62,5 @@ var cpu = (url) => {
     });
 }
 
-module.exports.tracedir = tracedir;
 module.exports.trace = trace;
 module.exports.cpu = cpu;
