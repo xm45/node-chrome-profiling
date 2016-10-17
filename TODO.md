@@ -1,4 +1,4 @@
-struct :
+restruct the directory:
     /modules
         parser trace file
         get target data
