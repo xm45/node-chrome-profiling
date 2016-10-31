@@ -1,6 +1,6 @@
 // var _ = require('undersorce');
 var fs = require('fs');
-// var _ = require('undersorce');
+var _ = require('underscore');
 var TraceToTimelineModel = require('devtools-timeline-model');
 const StringBuffer = require("./lib").StringBuffer;
 
@@ -98,28 +98,28 @@ var parse = (url) => {
 			domContentLoaded:0
 		},
 		run:{
-			parseHTMLs: {count:0, time:0, data:[]},
+			ParseHTML: {count:0, time:0, data:[]},
 			script:{
 				EvaluateScript: {count:0, time:0, data:[]},
 				GCEvent: {count:0, time:0, data:[]},
 				FunctionCall: {count:0, time:0, data:[]},
 				EventDispatch: {count:0, time:0, data:[]},
-			}
+			},
 			animation:{
 				AnimationFrameFired: {count:0, time:0, data:[]},
 				CancelAnimationFrame: {count:0, time:0, data:[]},
 				RequestAnimationFrame: {count:0, time:0, data:[]},
-			}
+			},
 			timer:{
 				TimerInstall: {count:0, time:0, data:[]},
 				TimerFire: {count:0, time:0, data:[]},
 				TimerRemove: {count:0, time:0, data:[]},
-			}
+			},
 			ajax:{
 				XHRLoad: {count:0, time:0, data:[]},
 				XHRReadyStateChange: {count:0, time:0, data:[]},
 			}
-		}
+		},
 		render:{
 			CompositeLayers: {count:0, time:0, data:[]},
 			DecodeImage: {count:0, time:0, data:[]},
@@ -127,11 +127,9 @@ var parse = (url) => {
 			Paint: {count:0, time:0, data:[]},
 			Layout: {count:0, time:0, data:[]},
 			ScrollLayer: {count:0, time:0, data:[]},
-			reflow:{
-				forcedRecalcs: {count:0, time:0, data:[]},
-				forcedLayouts: {count:0, time:0, data:[]},
-			},
-		}
+			Recalcs: {count:0, time:0, data:[]},
+			Layouts: {count:0, time:0, data:[]},
+		},
 		request:{
 			html: {count:0, time:0, size:0, data:[]},
 			js: {count:0, time:0, size:0, data:[]},
@@ -140,24 +138,38 @@ var parse = (url) => {
 			flash: {count:0, time:0, size:0, data:[]},
 		}
 	};
-	var datas = [];
-	var forcedReflowEvents = module.rawEvents
-        .filter( e => e.name == 'UpdateLayoutTree' || e.name == 'Layout')
-        .filter( e => e.args && e.args.beginData && e.args.beginData.stackTrace && e.args.beginData.stackTrace.length)
-    return forcedReflowEvents;
+	var requestList = [];
+	var eventList = [];
+	var stack = [];
     _.forEach(module.rawEvents,(e)=>{
-    	if(e => e.name == 'UpdateLayoutTree' || e.name == 'Layout') {
-
-    	}
-    	if(e => e.name == 'ResourceSendRequest' || e.name == 'ResourceReceiveResponse' || e.name == "ResourceReceivedData" || e.name == 'ResourceFinish') {
-    		var to = ""
+    	if(result.startTime == 0 || e.startTime < result.startTime)
+    		result.startTime = e.startTime;
+    	if(e.endTime > result.endTime)
+    		result.endTime = result.endTime;
+    	if(!(e.args && e.args.data))
+    		return;
+    	//Request
+    	if(e.name == 'ResourceSendRequest' || e.name == 'ResourceReceiveResponse' || e.name == "ResourceReceivedData" || e.name == 'ResourceFinish') {
+    		var to = "";
     		if(e.name == 'ResourceSendRequest'){
-	    		switch(e.mimeType) {
+	    		var data = {};
+	    		data.url = e.args.data.url;
+	    		data.method = e.args.data.requestMethod;
+	    		data.id = e.args.data.requestId;
+	    		data.priority = e.args.data.priority;
+	    		data.startTime = e.ts;
+	    		data.stackTrace = e.args.data.stackTrace;
+	    		data.raw = [];
+	    		data.raw.push(e);
+	    		requestList.push(data);
+    		}
+    		if(e.name == 'ResourceReceiveResponse'){
+    			switch(e.args.data.mimeType) {
 	    			case "text/html":
 	    				to = "html";
 	    				break;
 	    			case "text/css":
-	    				to = "html";
+	    				to = "css";
 	    				break;
 			        case "application/javascript":
 			        	to = "js";
@@ -168,17 +180,67 @@ var parse = (url) => {
 			        case "image/png":
 			        case "image/svg+xml":
 			        case "image/gif":
-			        	to = "html";
+			        	to = "img";
 	    				break;
 	    			default:
 	    				break;
 	    		}
-	    		if(to !== ""){
-
+	    		if(to == ""){
+	    			return;
 	    		}
+	    		_.forEach(requestList,(data)=>{
+	    			if(data.id == e.args.data.requestId){
+	    				data.type = to;
+	    				data.mimeType = e.args.data.mimeType;
+	    				data.raw.push(e);
+	    			}
+	    		})
+    		}
+    		if(e.name == 'ResourceReceivedData'){
+    			_.forEach(requestList,(data)=>{
+	    			if(data.id == e.args.data.requestId){
+    					data.size += e.args.data.encodedDataLength;
+	    				data.raw.push(e);
+	    			}
+	    		})
+    		}
+    		if(e.name == 'ResourceChangePriority'){
+    			_.forEach(requestList,(data)=>{
+	    			if(data.id == e.args.data.requestId){
+	    				data.priority = e.args.data.priority;
+	    				data.raw.push(e);
+	    			}
+	    		})
+    		}
+    		if(e.name == "ResourceFinish") {
+    			_.forEach(requestList,(data)=>{
+	    			if(data.id == e.args.data.requestId){
+    					data.networkTime = e.args.data.networkTime;
+    					data.time = e.ts - data.startTime;
+    					data.didFail = e.args.data.didFail;
+	    				data.raw.push(e);
+	    			}
+	    		})
     		}
     	}
+
+    	if(e.name == 'UpdateLayoutTree' || e.name == 'Layout') {
+
+    	}
     })
+    _.forEach(requestList,(data) => {
+    	if(data.didFail)
+    		return;
+    	var type = data.type;
+    	if(!result.request[type])
+    		return
+    	result.request[type].count++;
+    	result.request[type].time += data.time;
+    	result.request[type].size += data.size;
+    	result.request[type].data.push(data);
+    })
+	fs.writeFileSync("../output2.json", JSON.stringify(result , null, 2));
+
 	/*
 	ResourceSendRequest
 	ResourceReceiveResponse
@@ -213,6 +275,8 @@ var parse = (url) => {
 	 */
 	// _.foreach(module.rawEvents);
 }
+module.rawEvents = require("../../test.json")
+parse("baidu.com");
 module.exports.set = set;
 module.exports.getReflow = getReflow;
 module.exports.highlevel = highlevel;

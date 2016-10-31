@@ -1,0 +1,104 @@
+  BeginMainThreadFrame
+  // BlinkGCMarking
+  CommitLoad
+  // CompositeLayers
+  // CpuProfile
+  // domComplete
+  // domContentLoadedEventEnd
+  // domContentLoadedEventStart
+  domInteractive
+  domLoading
+  Draw LazyPixelRef
+  // EvaluateScript
+  EventDispatch
+  fetchStart
+  // firstImagePaint
+  // firstLayout
+  // firstTextPaint
+  // FunctionCall
+  // InvalidateLayout
+  // Layout
+  loadEventEnd
+  loadEventStart
+  // MajorGC
+  // MarkDOMContent
+  // MarkLoad
+  MessageLoop::RunTask
+  // MinorGC
+  navigationStart
+  // Paint
+  // PaintImage
+  // ParseAuthorStyleSheet
+  // ParseHTML
+  requestStart
+  // ResourceChangePriority
+  // ResourceFinish
+  // ResourceReceivedData
+  // ResourceReceiveResponse
+  // ResourceSendRequest
+  responseEnd
+  // ScheduleStyleRecalculation
+  SetLayerTreeId
+  TaskQueueManager::ProcessTaskFromWorkQueue
+  ThreadState::completeSweep
+  ThreadState::performIdleLazySweep
+  // TimerFire
+  // TimerInstall
+  // TimerRemove
+  TracingStartedInPage
+  unloadEventEnd
+  unloadEventStart
+  // UpdateCounters
+  // UpdateLayer
+  // UpdateLayerTree
+  // UpdateLayoutTree
+  // v8.compile
+  // XHRLoad
+  // XHRReadyStateChange
+{
+}
+
+    Root: "Root",
+    Program: "Program",
+    EventDispatch: "EventDispatch",
+
+    BeginFrame: "BeginFrame",
+    ScheduleStyleRecalculation: "ScheduleStyleRecalculation",
+    RecalculateStyles: "RecalculateStyles",
+    InvalidateLayout: "InvalidateLayout",
+    Layout: "Layout",
+    Paint: "Paint",
+    ScrollLayer: "ScrollLayer",
+    DecodeImage: "DecodeImage",
+    ResizeImage: "ResizeImage",
+    CompositeLayers: "CompositeLayers",
+
+    ParseHTML: "ParseHTML",
+
+    TimerInstall: "TimerInstall",
+    TimerRemove: "TimerRemove",
+    TimerFire: "TimerFire",
+
+    XHRReadyStateChange: "XHRReadyStateChange",
+    XHRLoad: "XHRLoad",
+    EvaluateScript: "EvaluateScript",
+
+    MarkLoad: "MarkLoad",
+    MarkDOMContent: "MarkDOMContent",
+
+    TimeStamp: "TimeStamp",
+    Time: "Time",
+    TimeEnd: "TimeEnd",
+
+    ScheduleResourceRequest: "ScheduleResourceRequest",
+    ResourceSendRequest: "ResourceSendRequest",
+    ResourceReceiveResponse: "ResourceReceiveResponse",
+    ResourceReceivedData: "ResourceReceivedData",
+    ResourceFinish: "ResourceFinish",
+
+    FunctionCall: "FunctionCall",
+    GCEvent: "GCEvent",
+
+    RequestAnimationFrame: "RequestAnimationFrame",
+    CancelAnimationFrame: "CancelAnimationFrame",
+    FireAnimationFrame: "FireAnimationFrame"
