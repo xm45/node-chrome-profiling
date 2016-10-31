@@ -14,7 +14,7 @@ var tracefile = 'trace-raw.devtools.trace';
 var reflowfile = 'forced-reflow.trace';
 var reportfile = "report.txt";
 
-const url = "http://www.baidu.com";
+var url = process.argv[2] || "http://www.baidu.com";
 
 var rawEvents = [];
 var result = function(){};
@@ -39,20 +39,23 @@ var start = () => {
 }
 
 var parse = () => {
+	console.log("wait for parse");
 	result.rawEvents = tester.rawEvents;
 	parser.set(result.rawEvents);
 	result.reflow = parser.getReflow();
 	result.highlevel = function(){};
-	parser.highlevel(url);
-	result.highlevel.append('\n');
-	result.highlevel.append('(', result.reflow.length, ') forced style recalc and forced layouts found.');
+	result.highlevel = parser.highlevel(url);
+	//result.highlevel.append('\n');
+	//result.highlevel.append('(', result.reflow.length, ') forced style recalc and forced layouts found.');
 	//this node extension may have Thread safety problem, so the time data(sum of events' time) may be wrong
-	result.bigrig = bigrig.analyze(JSON.stringify(result.rawEvents , null, 2));
+	result.bigrig = bigrig.analyze(JSON.stringify(result.rawEvents , null, 2))[0];
 	// module.exports.result = result;
 	emitter.emit('finish_parse');
 }
 
 var writeback = (result) => {
+	console.log("write back to file");
+
 	//check
 	checkDir(tracedir);
 	//write trace file
@@ -66,6 +69,7 @@ var writeback = (result) => {
     //write report file
 	fs.writeFileSync(tracedir+reportfile,result.highlevel.str+JSON.stringify(result.bigrig , null, 2));
     console.log('Report file: ' + tracedir+reportfile);
+
 }
 
 init();
@@ -81,6 +85,7 @@ emitter.on('finish_parse',()=>{
 	emitter.emit('exit');
 })
 emitter.on('exit',()=>{
+	// process.exit();
 })
 // process.nextTick(
 // 	()=>tester.run("http://baidu.com")
