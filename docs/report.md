@@ -41,6 +41,8 @@ var report = require(path-to-report.json)
         time : [time],
         id : [number],
         size : [size],
+        stackTrace:[Object],
+        readyState:[number],
         raw : [raw data]
     }
     其中：
@@ -49,6 +51,8 @@ var report = require(path-to-report.json)
         time代表耗时
         id如果存在，代表事件的唯一标识符
         size如果存在，代表请求传输的大小
+        stackTrace如果存在，代表触发该事件的js信息
+        readyState如果存在，代表XHR对象的新状态
         raw为按照时间顺序的该事件相关的每一个原始数据
 [raw data]是一个数组，包含的是在trace文件的中原始JSON对象.
 
