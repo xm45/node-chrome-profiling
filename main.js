@@ -2,19 +2,42 @@ const fs = require('fs');
 const events = require("events");
 const emitter = new events.EventEmitter();
 
-var bigrig = require('./libs/bigrig');
-const StringBuffer = require("./lib").StringBuffer;
+// var bigrig = require('./libs/bigrig');
 
-const runner = require("./run_chrome");
-const tester = require("./tester");
-const parser = require("./parser");
+const yargs = require("yargs");
+const runner = require("./browsers/chrome");
+const tester = require("./modules/tester");
+const parser = require("./modules/parser");
+const StringBuffer = require("./modules/lib").StringBuffer;
+
+var tracefile = 'trace-raw';
+var reportfile = "report";
 
 var tracedir = "trace_file/"+Date.now()+"/";
-var tracefile = 'trace-raw.devtools.trace';
-var reflowfile = 'forced-reflow.trace';
-var reportfile = "report.txt";
+var url = "http://www.baidu.com";
+var needRaw = true;
+var suffix = "";
 
-var url = process.argv[2] || "http://www.baidu.com";
+var argv = yargs.argv;
+if(argv.url){
+	url = argv.url;
+}
+if(argv.name){
+	tracedir = "trace_file/"+argv.name+"/"
+}
+if(argv.noraw){
+	needRaw = false;
+}
+if(argv.suffix){
+	suffix = argv.suffix;
+}
+if(argv.h){
+	console.log("--url [domain]\t\tset test url. (notice: need http:// or https://)");
+	console.log("--name [string]\t\tset tracedir name. (unix timestamp default)");
+	console.log("--suffix [string]\tset suffix of trace file and report file.");
+	console.log("--noraw\t\t\tdon't write the raw trace data to report");
+	process.exit();
+}
 
 var rawEvents = [];
 var result = function(){};
@@ -28,6 +51,12 @@ var checkDir = (x)=>{
 }
 
 var init = () => {
+	if(suffix){
+		tracefile += "-"+suffix;
+		reportfile += "-"+suffix;
+	}
+	tracefile += ".json";
+	reportfile += ".json";
 	checkDir(runner.tmpdir);
 	runner(emitter);
 	tester(emitter);
@@ -39,35 +68,23 @@ var start = () => {
 }
 
 var parse = () => {
-	console.log("wait for parse");
+	console.log("Wait for parse\n");
 	result.rawEvents = tester.rawEvents;
 	parser.set(result.rawEvents);
-	result.reflow = parser.getReflow();
-	result.highlevel = function(){};
-	result.highlevel = parser.highlevel(url);
-	//result.highlevel.append('\n');
-	//result.highlevel.append('(', result.reflow.length, ') forced style recalc and forced layouts found.');
-	//this node extension may have Thread safety problem, so the time data(sum of events' time) may be wrong
-	result.bigrig = bigrig.analyze(JSON.stringify(result.rawEvents , null, 2))[0];
-	// module.exports.result = result;
+	result.report = parser.parse(url,needRaw);
 	emitter.emit('finish_parse');
 }
 
 var writeback = (result) => {
-	console.log("write back to file");
-
+	console.log("Write back to file\n");
 	//check
 	checkDir(tracedir);
 	//write trace file
 	fs.writeFileSync(tracedir+tracefile, JSON.stringify(result.rawEvents , null, 2));
     console.log('Trace file: ' + tracedir+tracefile);
     console.log('You can open the trace file in DevTools Timeline panel. (Turn on experiment: Timeline tracing based JS profiler)\n');
-    //write reflow file
-	fs.writeFileSync(tracedir+reflowfile, JSON.stringify(result.reflow , null, 2));
-	console.log('(', result.reflow.length, ') forced style recalc and forced layouts found.')
-    console.log('Found events written to file: ' + tracedir+reflowfile);
     //write report file
-	fs.writeFileSync(tracedir+reportfile,result.highlevel.str+JSON.stringify(result.bigrig , null, 2));
+	fs.writeFileSync(tracedir+reportfile,JSON.stringify(result.report , null, 2));
     console.log('Report file: ' + tracedir+reportfile);
 
 }
@@ -85,9 +102,5 @@ emitter.on('finish_parse',()=>{
 	emitter.emit('exit');
 })
 emitter.on('exit',()=>{
-	// process.exit();
+	process.exit();
 })
-// process.nextTick(
-// 	()=>tester.run("http://baidu.com")
-// );
-

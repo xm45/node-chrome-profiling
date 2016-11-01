@@ -1,6 +1,5 @@
 var path = require('path');
 var spawn = require('child_process').spawn;
-const StringBuffer = require("./lib").StringBuffer;
 
 const now = path.resolve(__dirname,'.');
 const tmpdir = now + "/tmp";

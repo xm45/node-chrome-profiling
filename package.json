@@ -14,6 +14,8 @@
     "chrome-remote-interface": "^0.11.0",
     "devtools-timeline-model": "^1.0",
     "httpster": "^1.0.3",
-    "underscore": "^1.8.3"
+    "lodash": "^4.16.5",
+    "underscore": "^1.8.3",
+    "yargs": "^6.3.0"
   }
 }
