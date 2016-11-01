@@ -11,7 +11,22 @@ node-chrome-profiling 可以帮助你做到
 * [Chrome](http://www.google.cn/chrome/browser/desktop/index.html)，软件将通过命令行 $ google-chrome 来调用Chrome，你还可以使用timeline来载入生成的文件.  
 
 # 使用
-下载
+配置环境
+```sh
+$ sudo apt-get update  
+$ sudo apt-get install git
+$ sudo apt-get install nodejs  
+$ sudo apt-get install npm
+32位:
+$ wget https://dl.google.com/linux/direct/google-chrome-stable_current_i386.deb
+$ sudo dpkg -i google-chrome-stable_current_i386.deb
+64位:
+$ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+$ sudo dpkg -i google-chrome-stable_current_amd64.deb
+
+$ sudo apt-get install google-chrome
+```
+下载软件
 ```sh
 $ git clone 
 $ cd node-chrome-profiling
@@ -19,7 +34,14 @@ $ npm install
 ```
 使用
 ```sh
-$ node main
+使用默认网站百度，测试你的网络是否接通
+$ node main 
+
+输入-h可以查看命令参数
+$ node main -h
+
+常用模式
+$ node main --url http://example.com --highlevel
 ```
 你可以在`\trace_file`下找到所有的trace文件夹  
 
@@ -32,6 +54,7 @@ $ node main
 # 文档
 参考文档内容  
 *    [Trace Event Format](https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview)  
+*    [Timeline Event Reference ](https://developers.google.com/web/tools/chrome-devtools/evaluate-performance/performance-reference?hl=en)
 
 参考项目代码  
 *    [chrome-remote-interface](https://github.com/cyrus-and/chrome-remote-interface)，使用其提供封装的方法来调用chrome  

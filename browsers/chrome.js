@@ -1,7 +1,7 @@
 var path = require('path');
 var spawn = require('child_process').spawn;
 
-const now = path.resolve(__dirname,'.');
+const now = path.resolve(__dirname,'..');
 const tmpdir = now + "/tmp";
 const command = "google-chrome";
 const args = ["--remote-debugging-port=9222","--user-data-dir="+tmpdir+"/chrome-profiling","--no-default-browser-check","--no-first-run"]
@@ -27,8 +27,9 @@ var run = ()=>{
 
 var close = ()=>{
 	// console.log(chrome);
-	if(chrome)
+	if(chrome){
 		chrome.kill();
+	}
 }
 
 module.exports.run = run;
