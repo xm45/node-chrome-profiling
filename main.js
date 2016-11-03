@@ -18,6 +18,7 @@ var url = "http://www.baidu.com";
 var needRaw = true;
 var highLevel = false;
 var suffix = "";
+var filter = 0;
 
 var argv = yargs.argv;
 if(argv.url){
@@ -35,12 +36,19 @@ if(argv.highlevel){
 if(argv.suffix){
 	suffix = argv.suffix;
 }
+if(argv.filter){
+	filter = argv.filter;
+}
 if(argv.h){
 	console.log("--url [domain]\t\tset test url. (notice: need http:// or https://)");
 	console.log("--name [string]\t\tset tracedir name. (unix timestamp default)");
 	console.log("--suffix [string]\tset suffix of trace file and report file.");
 	console.log("--highlevel\t\tdont't write any detail, only high level data");
 	console.log("--noraw\t\t\tdon't write the raw trace data to report");
+	console.log("--filter [1,2,3]\tonly record the events before landmark");
+	console.log("\t\t\t1: firstPaint");
+	console.log("\t\t\t2: domContentLoaded");
+	console.log("\t\t\t3: load");
 	process.exit();
 }
 
@@ -77,7 +85,7 @@ var parse = () => {
 	console.log("Wait for parse\n");
 	result.rawEvents = tester.rawEvents;
 	parser.set(result.rawEvents);
-	result.report = parser.parse(url,needRaw,highLevel);
+	result.report = parser.parse(url,needRaw,highLevel,filter);
 	emitter.emit('finish_parse');
 }
 

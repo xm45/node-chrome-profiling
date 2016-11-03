@@ -25,11 +25,13 @@ var addCounter = function(target, data){
 	});
 	target.raw.push(data);
 }
-var parse = function(url, needRaw, highLevel){
+var parse = function(url, needRaw, highLevel, filter){
 	if(arguments[1] === undefined) needRaw = true;
 	if(arguments[2] === undefined) highLevel = false;
+	if(arguments[3] === undefined) filter = 0;
 	var result = {
 		url:url,
+		filter:filter,
 		time:{
 			startTime:0,
 			endTime:0,
@@ -128,6 +130,15 @@ var parse = function(url, needRaw, highLevel){
 	});
     _.forEach(module.rawEvents,(e)=>{
     	if(!e.args){
+    		return;
+    	}
+    	if(filter == 1 && e.ts > result.landmark.firstPaint){
+    		return;
+    	}
+    	if(filter == 2 && e.ts > result.landmark.domContentLoaded){
+    		return;
+    	}
+    	if(filter == 3 && e.ts > result.landmark.loadTime){
     		return;
     	}
     	//Request
