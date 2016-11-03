@@ -42,6 +42,9 @@ $ node main -h
 
 常用模式
 $ node main --url http://example.com --highlevel
+
+若只需要对某个trace文件进行解析，可以使用
+$ node parse --filename xxx/xxx/xxx
 ```
 你可以在`\trace_file`下找到所有的trace文件夹  
 
