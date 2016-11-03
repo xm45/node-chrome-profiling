@@ -1,4 +1,4 @@
-x# 如何解读report.json文件的格式
+# 如何解读report.json文件的格式
 首先，report.json遵循json格式，所以你可以使用下面的语句直接将其载入到你的程序中
 ```
 var report = require(path-to-report.json)
