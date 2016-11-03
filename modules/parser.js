@@ -25,12 +25,12 @@ var addCounter = function(target, data){
 	});
 	target.raw.push(data);
 }
-var parse = function(url, needRaw, highLevel, filter){
+var parse = function(needRaw, highLevel, filter){
 	if(arguments[1] === undefined) needRaw = true;
 	if(arguments[2] === undefined) highLevel = false;
 	if(arguments[3] === undefined) filter = 0;
 	var result = {
-		url:url,
+		url:"",
 		filter:filter,
 		time:{
 			startTime:0,
@@ -161,6 +161,9 @@ var parse = function(url, needRaw, highLevel, filter){
 	    		}
 	    		needRaw && data.raw.push(e);
 	    		requestList.push(data);
+	    		if(result.url == "" && data.priority == "VeryHigh"){
+	    			result.url = data.url;
+	    		}
     		}
     		if(e.name == 'ResourceReceiveResponse'){
     			switch(e.args.data.mimeType) {

@@ -3,24 +3,21 @@ const events = require("events");
 const emitter = new events.EventEmitter();
 
 const yargs = require("yargs");
-const runner = require("./browsers/chrome");
-const tester = require("./modules/tester");
 const parser = require("./modules/parser");
-const StringBuffer = require("./modules/lib").StringBuffer;
 
 var tracefile = 'trace-raw';
 var reportfile = "report";
 
 var tracedir = "trace_file/"+Date.now()+"/";
-var url = "http://www.baidu.com";
+var filename = "trace-raw.json";
 var needRaw = true;
 var highLevel = false;
 var suffix = "";
 var filter = 0;
 
 var argv = yargs.argv;
-if(argv.url){
-	url = argv.url;
+if(argv.filename){
+	filename = argv.filename;
 }
 if(argv.name){
 	tracedir = "trace_file/"+argv.name+"/"
@@ -38,7 +35,7 @@ if(argv.filter){
 	filter = argv.filter;
 }
 if(argv.h){
-	console.log("--url [domain]\t\tset test url. (notice: need http:// or https://)");
+	console.log("--filename [string]\t\tset trace filename (default: trace-raw.json)");
 	console.log("--name [string]\t\tset tracedir name. (unix timestamp default)");
 	console.log("--suffix [string]\tset suffix of trace file and report file.");
 	console.log("--highlevel\t\tdont't write any detail, only high level data");
@@ -61,30 +58,25 @@ var checkDir = (x)=>{
 	}
 }
 
-var init = () => {
+var start = () => {
 	if(suffix){
 		tracefile += "-"+suffix;
 		reportfile += "-"+suffix;
 	}
+	rawEvents = JSON.parse(fs.readFileSync(filename));
 	tracefile += ".json";
 	reportfile += ".json";
-	checkDir(runner.tmpdir);
 	checkDir("trace_file/");
-	runner(emitter);
-	tester(emitter);
-	runner.run();
-}
-
-var start = () => {
-	tester.trace(url);
+	writeback(parse());
 }
 
 var parse = () => {
+	var result = {};
 	console.log("Wait for parse\n");
-	result.rawEvents = tester.rawEvents;
+	result.rawEvents = rawEvents;
 	parser.set(result.rawEvents);
 	result.report = parser.parse(needRaw,highLevel,filter);
-	emitter.emit('finish_parse');
+	return result;
 }
 
 var writeback = (result) => {
@@ -101,19 +93,6 @@ var writeback = (result) => {
     console.log('Report show the important events that affect performance.\n');
 }
 
-init();
-emitter.on('running',() => {
-	start();
-	console.log("Running Chrome\n");
-});
-emitter.on('finish_test',()=>{
-	runner.close();
-	parse();
-})
-emitter.on('finish_parse',()=>{
-	writeback(result);
-	emitter.emit('exit');
-})
-emitter.on('exit',()=>{
-	process.exit();
-})
+start();
+
+module.exports.start = start;
